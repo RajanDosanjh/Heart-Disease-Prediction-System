@@ -19,7 +19,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 
 # ===========================================
-# 1. Load and Inspect Dataset
+#  Load and Inspect Dataset
 # ===========================================
 file_path = "heart.csv"
 data = pd.read_csv(file_path)
@@ -33,7 +33,7 @@ print("After Removing Duplicates:", data.shape)
 print("\nMissing Values:\n", data.isnull().sum())
 
 # ===========================================
-# 2. Outlier Capping
+#  Outlier Capping
 # ===========================================
 def cap_outliers(column):
     q1, q3 = column.quantile([0.25, 0.75])
@@ -48,13 +48,13 @@ for col in numeric_columns:
         data[col] = cap_outliers(data[col])
 
 # ===========================================
-# 3. Encode Categorical Variables
+# Encode Categorical Variables
 # ===========================================
 categorical_columns = ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
 data = pd.get_dummies(data, columns=categorical_columns, drop_first=True)
 
 # ===========================================
-# 4. Feature Engineering
+# Feature Engineering
 # ===========================================
 data['age_group'] = pd.cut(data['age'], bins=[0, 40, 60, 80], labels=['Young', 'Middle-aged', 'Senior'])
 data['heart_stress'] = data['trestbps'] / data['thalach']
@@ -63,7 +63,7 @@ data['risk_score'] = data['chol'] * data['trestbps']
 data = pd.get_dummies(data, columns=['age_group'], drop_first=True)
 
 # ===========================================
-# 5. Split Features/Target
+# Split features/Target
 # ===========================================
 X = data.drop('target', axis=1)
 y = data['target']
@@ -74,7 +74,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # ===========================================
-# 6. Feature Importance
+# Feature Importance
 # ===========================================
 rf_model = RandomForestClassifier(random_state=42)
 rf_model.fit(X_train, y_train)
@@ -93,7 +93,7 @@ plt.gca().invert_yaxis()
 plt.show()
 
 # ===========================================
-# 7. SelectKBest Statistical Selection
+# SelectKBest Statistical Selection
 # ===========================================
 selector = SelectKBest(score_func=f_classif, k=10)
 X_selected = selector.fit_transform(X, y)
@@ -108,7 +108,7 @@ X_final = X[final_features]
 print("\nFinal Features for Modeling:", final_features)
 
 # ===========================================
-# 8. Model Training & Evaluation
+# Model Training & Evaluation
 # ===========================================
 def evaluate_model(model, X_train, X_test, y_train, y_test, model_name="Model"):
     model.fit(X_train, y_train)
@@ -120,7 +120,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test, model_name="Model"):
     print("F1 Score :", f1_score(y_test, y_pred))
     return model
 
-# ---- KNN (with Pipeline + GridSearch) ----
+#KNN (with Pipeline + GridSearch) 
 pipeline_knn = Pipeline([
     ('scaler', StandardScaler()),
     ('knn', KNeighborsClassifier())
@@ -133,7 +133,7 @@ best_k = grid_knn.best_params_['knn__n_neighbors']
 print("\nBest k for KNN:", best_k)
 evaluate_model(grid_knn.best_estimator_, X_train, X_test, y_train, y_test, "KNN")
 
-# ---- Decision Tree ----
+#Decision Tree
 dt_params = {
     "max_depth": [2, 5, 10, 15],
     "min_samples_split": [2, 5, 10, 15],
@@ -144,13 +144,14 @@ grid_dt.fit(X_train, y_train)
 print("\nOptimal DT Params:", grid_dt.best_params_)
 evaluate_model(grid_dt.best_estimator_, X_train, X_test, y_train, y_test, "Decision Tree")
 
-# ---- Logistic Regression ----
+# Logistic Regression
 logreg = Pipeline([
     ('scaler', StandardScaler()),
     ('lr', LogisticRegression(max_iter=1000))
 ])
 evaluate_model(logreg, X_train, X_test, y_train, y_test, "Logistic Regression")
 
-# ---- Gaussian Naive Bayes ----
+# Gaussian Naive Bayes
 gnb = GaussianNB()
 evaluate_model(gnb, X_train, X_test, y_train, y_test, "Naive Bayes")
+
